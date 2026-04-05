@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FW.TZE MENU</title>
+    <style>
+        body {
+            background-color: black;
+            color: #d4af37;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #dotCanvas { position: fixed; top: 0; left: 0; z-index: 0; }
+        
+        .container-box {
+            background-color: rgba(0, 0, 0, 0.95);
+            border: 2px solid #d4af37;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
+            text-align: center;
+            width: 480px;
+            z-index: 10; 
+            position: relative;
+        }
+
+        .brand-name {
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: #d4af37;
+            margin-bottom: 5px;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+
+        #vrStatus {
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .header-item { 
+            color: #d4af37; 
+            font-size: 17px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            transition: 0.3s;
+            opacity: 0.4;
+        }
+        .header-item.active { opacity: 1; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+
+        .mod-item { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 10px 0; 
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            transition: 0.2s;
+            border: 1px solid #333;
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .mod-item.enabled {
+            border-color: #00ff00;
+            color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+
+        .mod-item.locked {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .off-box {
+            background: #ff4444;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 5px;
+            border-radius: 4px;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: none;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .loader-circle {
+            border: 6px solid rgba(212, 175, 55, 0.1); border-top: 6px solid #d4af37;
+            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .input-wrapper { position: relative; width: 100%; margin-top: 20px; }
+        input[type="password"], input[type="text"] {
+            padding: 12px; padding-right: 50px; font-size: 14px; border-radius: 5px;
+            border: 1px solid #d4af37; background: #111; color: white; width: 100%; box-sizing: border-box; outline: none;
+        }
+        .emoji-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 20px; cursor: pointer; }
+        .main-btn { padding: 12px; background-color: #d4af37; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; }
+        .main-btn:disabled { background-color: #555; cursor: not-allowed; }
+        
+        .power-label {
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: left;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .power-bar { 
+            width: 100%; 
+            accent-color: #007bff; 
+            margin-bottom: 15px; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="dotCanvas"></canvas>
+
+    <div id="loginScreen" class="container-box">
+        <div class="brand-name">FW.TZE MENU</div>
+        <div style="font-size: 40px; margin-top: 10px;">🔒</div>
+        <div class="input-wrapper">
+            <input type="password" id="passwordInput" placeholder="Enter code..." autofocus>
+            <button class="emoji-btn" onclick="toggleVisibility('passwordInput')">🙈</button>
+        </div>
+        <button class="main-btn" onclick="checkPassword()">Enter Menu</button>
+        <p id="result" style="font-size: 12px; margin-top: 10px;"></p>
+    </div>
+
+    <div id="loadingScreen" class="container-box" style="display: none;">
+        <div class="loader-circle"></div>
+        <h2 style="font-size: 16px; letter-spacing: 2px; color: #d4af37;">VERIFYING...</h2>
+    </div>
+
+    <div id="botScreen" class="container-box" style="display: none;">
+        <div class="brand-name">FW.TZE MENU</div>
+        <h2 id="botText" style="font-size: 18px; color: #d4af37; margin-top: 20px;">WAITING FOR BOT TO HOST...</h2>
+        <button id="botReadyBtn" class="main-btn" onclick="handleBotReady()" disabled>Bot Ready (4s)</button>
+        <button id="goToMenuBtn" class="main-btn" onclick="handleMenuClick()" style="display: none;">Go To Menu (5 Clicks)</button>
+    </div>
+
+    <div id="menuScreen" class="container-box" style="display: none;">
+        <div class="brand-name">FW.TZE MENU</div>
+        <div id="vrStatus">VR Not Supported</div>
+        
+        <div class="top-btns-row" style="margin-bottom:15px; display: flex; justify-content: center; gap: 10px;">
+            <button id="vrBtn" style="background:none; border:1px solid #d4af37; color:#d4af37; padding:5px 10px; cursor:pointer; border-radius:4px; font-size: 10px;" onclick="checkVR()">Check VR</button>
+            <button id="connectBtn" style="background:none; border:1px solid #d4af37; color:#d4af37; padding:5px 10px; cursor:pointer; border-radius:4px; font-size: 10px;" onclick="handleConnect()">Connect</button>
+        </div>
+
+        <div class="header-row">
+            <span class="header-item active" id="expHeader" onclick="showPage('exploitsPage')">Exploits</span>
+            <span class="header-item" id="playHeader" onclick="showPage('playersPage')">Players</span>
+            <span class="header-item" id="devHeader" onclick="handleDevClick()">Dev Menu</span>
+            <span class="header-item" id="credHeader" onclick="showPage('creditsPage')">Credits</span>
+        </div>
+        
+        <div id="exploitsPage">
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Inf RPG Ammo</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Hand Duping</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+
+            <label class="power-label">Hand Duping Power: <span id="powerVal">50</span></label>
+            <input type="range" min="1" max="100" value="50" class="power-bar" id="powerSlider" disabled oninput="updatePowerDisplay(this.value)">
+            
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Rapid Fire RPG</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+        </div>
+
+        <div id="playersPage" style="display: none;">
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Give Random Item Hand</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Fling All Up</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+            
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>TP All To Me</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+        </div>
+
+        <div id="devLogin" style="display: none;">
+            <p style="color: #d4af37; font-size: 12px;">ENTER OWNER PASSWORD</p>
+            <div class="input-wrapper">
+                <input type="password" id="devPasswordInput" placeholder="Owner Code...">
+                <button class="emoji-btn" onclick="toggleVisibility('devPasswordInput')">🙈</button>
+            </div>
+            <button class="main-btn" onclick="checkDevPassword()">Unlock</button>
+        </div>
+
+        <div id="devPage" style="display: none;">
+            <p style="color: lime; font-size: 11px;">OWNER ACCESS GRANTED</p>
+            <div class="mod-item" onclick="toggleMod(this)"><span>Crash All</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+            <div class="mod-item" onclick="toggleMod(this)"><span>Auth Bypass</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+        </div>
+
+        <div id="creditsPage" style="display: none;">
+            <p style="color: #d4af37; font-size: 12px; margin-top: 20px;">Main Developer:</p>
+            <div style="font-size: 28px; color: #d4af37; font-weight: bold; text-shadow: 0 0 10px #d4af37;">FW.TZE</div>
+        </div>
+    </div>
+
+    <script>
+        let devUnlocked = false;
+        let menuClickCount = 0;
+
+        // ENTER KEY LISTENERS
+        document.getElementById("passwordInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkPassword(); });
+        document.getElementById("devPasswordInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkDevPassword(); });
+
+        function updatePowerDisplay(val) {
+            document.getElementById("powerVal").innerText = val;
+        }
+
+        function checkPassword() {
+            if (document.getElementById("passwordInput").value.toLowerCase() === "acmodsbeta") {
+                document.getElementById("loginScreen").style.display = "none";
+                document.getElementById("loadingScreen").style.display = "block";
+                setTimeout(() => {
+                    document.getElementById("loadingScreen").style.display = "none";
+                    startBotTimer();
+                }, 5500);
+            } else {
+                document.getElementById("result").innerText = "Invalid Code";
+                document.getElementById("result").style.color = "red";
+            }
+        }
+
+        function startBotTimer() {
+            document.getElementById("botScreen").style.display = "block";
+            let timeLeft = 4;
+            const btn = document.getElementById("botReadyBtn");
+            const timer = setInterval(() => {
+                timeLeft--;
+                btn.innerText = `Bot Ready (${timeLeft}s)`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.innerText = "Bot Ready";
+                }
+            }, 1000);
+        }
+
+        function handleBotReady() {
+            document.getElementById("botText").innerText = "BOT HOSTED";
+            document.getElementById("botReadyBtn").style.display = "none";
+            document.getElementById("goToMenuBtn").style.display = "block";
+        }
+
+        function handleMenuClick() {
+            menuClickCount++;
+            const btn = document.getElementById("goToMenuBtn");
+            btn.innerText = `Go To Menu (${5 - menuClickCount})`;
+            if (menuClickCount >= 5) {
+                document.getElementById("botScreen").style.display = "none";
+                document.getElementById("menuScreen").style.display = "block";
+            }
+        }
+
+        function handleConnect() {
+            const btn = document.getElementById("connectBtn");
+            if (btn.innerText === "Connected" || btn.innerText === "Connecting...") return;
+            btn.innerText = "Connecting...";
+            btn.style.color = "#d4af37";
+            setTimeout(() => {
+                btn.innerText = "Connected";
+                btn.style.color = "#00ff00";
+                btn.style.borderColor = "#00ff00";
+                document.querySelectorAll('.mod-item.locked').forEach(m => m.classList.remove('locked'));
+                document.getElementById("powerSlider").disabled = false;
+            }, 5000);
+        }
+
+        function checkVR() {
+            const status = document.getElementById("vrStatus");
+            status.innerText = "VR Supported";
+            status.style.color = "#00ff00";
+            document.getElementById("vrBtn").style.color = "#00ff00";
+        }
+
+        function toggleMod(element) {
+            const nextEl = element.nextElementSibling;
+            if (!element.classList.contains('enabled')) {
+                element.classList.add('enabled');
+                if (nextEl && nextEl.classList.contains('off-box')) {
+                    nextEl.style.display = 'block';
+                }
+            }
+        }
+
+        function turnOff(element) {
+            const prevMod = element.previousElementSibling;
+            prevMod.classList.remove('enabled');
+            element.style.display = 'none';
+        }
+
+        function showPage(pageId) {
+            ['exploitsPage', 'playersPage', 'devLogin', 'devPage', 'creditsPage'].forEach(p => {
+                const el = document.getElementById(p);
+                if(el) el.style.display = (p === pageId ? 'block' : 'none');
+            });
+            document.getElementById('expHeader').classList.toggle('active', pageId === 'exploitsPage');
+            document.getElementById('playHeader').classList.toggle('active', pageId === 'playersPage');
+            document.getElementById('devHeader').classList.toggle('active', (pageId === 'devLogin' || pageId === 'devPage'));
+            document.getElementById('credHeader').classList.toggle('active', pageId === 'creditsPage');
+        }
+
+        // UPDATED DEV PASSWORD
+        function checkDevPassword() {
+            if (document.getElementById("devPasswordInput").value === "tw.") {
+                devUnlocked = true;
+                showPage('devPage');
+            } else {
+                alert("Incorrect Owner Code");
+            }
+        }
+
+        function handleDevClick() {
+            if (devUnlocked) showPage('devPage');
+            else showPage('devLogin');
+        }
+
+        function toggleVisibility(id) {
+            const x = document.getElementById(id);
+            x.type = x.type === "password" ? "text" : "password";
+        }
+
+        const canvas = document.getElementById('dotCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let dots = [];
+        for(let i=0; i<80; i++) dots.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2});
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "rgba(212, 175, 55, 0.2)";
+            dots.forEach(d => { ctx.beginPath(); ctx.arc(d.x, d.y, d.s, 0, Math.PI*2); ctx.fill(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
