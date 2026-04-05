@@ -122,7 +122,6 @@
         }
         .emoji-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 20px; cursor: pointer; }
         .main-btn { padding: 12px; background-color: #d4af37; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; }
-        .main-btn:disabled { background-color: #555; cursor: not-allowed; }
         
         .power-label {
             color: #d4af37;
@@ -197,6 +196,12 @@
             
             <div class="mod-item locked" onclick="toggleMod(this)"><span>Rapid Fire RPG</span></div>
             <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Inf Ammo</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
+
+            <div class="mod-item locked" onclick="toggleMod(this)"><span>Rapid Fire</span></div>
+            <div class="off-box" onclick="turnOff(this)">Turn Off Mods</div>
         </div>
 
         <div id="playersPage" style="display: none;">
@@ -237,7 +242,6 @@
         let devUnlocked = false;
         let menuClickCount = 0;
 
-        // ENTER KEY LISTENERS
         document.getElementById("passwordInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkPassword(); });
         document.getElementById("devPasswordInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkDevPassword(); });
 
@@ -338,7 +342,6 @@
             document.getElementById('credHeader').classList.toggle('active', pageId === 'creditsPage');
         }
 
-        // UPDATED DEV PASSWORD
         function checkDevPassword() {
             if (document.getElementById("devPasswordInput").value === "tw.") {
                 devUnlocked = true;
